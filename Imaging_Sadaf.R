@@ -1,4 +1,4 @@
-# Install and initialize renv
+# Install and initialize renv so we have control over the package versions and the environment
 if (!requireNamespace("renv", quietly = TRUE)) {
   install.packages("renv")
 }
@@ -7,18 +7,7 @@ library(renv)
 # Initialize renv project (only run once per project)
 renv::init()
 
-# Install magick inside the renv environment
-install.packages("magick")
-library(magick)
 
-
-
-# Save the environment state (creates/updates renv.lock)
-renv::snapshot()
-
-#Now I need to read the package documentation to see how I can convert this to bitmap image where I can see the raw velue of each pixel
-
-help(package = "magick")
 
 
 #print(img)
@@ -37,6 +26,19 @@ if (!requireNamespace("magick", quietly = TRUE)) {
 }
 library(magick)
 
+
+
+
+
+#Now I need to read the package documentation to see how I can convert this to bitmap image where I can see the raw velue of each pixel
+
+help(package = "magick")
+
+
+
+# Save the environment state (creates/updates renv.lock)
+renv::snapshot()
+
 # Step 1: Read the image
 img <- image_read("C:/Users/sadaf/Downloads/Test_image.jpg")
 
@@ -46,16 +48,17 @@ img_data <- image_data(img)
 # Step 3: Define helper functions for hex conversion
 hex_to_int <- function(hex) {
   as.integer(strtoi(hex, base = 16))
-}
+} #Convert color from hex (like "FF") to integer (like 255)
 
 int_to_hex <- function(int) {
   toupper(sprintf("%02x", int))
-}
+} #Convert int back to hex to store it in image pixel again
 
 # Step 4: Define the grayscale conversion function using luminance formula
+#luminance formula works in a way that we can preserve the brightness when we convert color pixel to fray pixel
 to_greyscale <- function(r, g, b) {
-  r_val <- hex_to_int(r)
-  g_val <- hex_to_int(g)
+  r_val <- hex_to_int(r) # converts color from hex (like "FF") to integer (like 255)
+  g_val <- hex_to_int(g) #Function body
   b_val <- hex_to_int(b)
 
   # Apply luminance formula
@@ -63,7 +66,7 @@ to_greyscale <- function(r, g, b) {
   grey_hex <- int_to_hex(grey_val)
 
   return(c(grey_hex, grey_hex, grey_hex))
-}
+} #return the values
 
 # Step 5: Define the apply_filter function
 apply_filter <- function(img_data, filter_function) {
@@ -135,22 +138,6 @@ hex_to_int <- function(hex) {
 int_to_hex <- function(int) {
   toupper(sprintf("%02x", int))
 }
-
-# Grayscale filter using luminance method
-to_greyscale <- function(r, g, b) {
-  r_val <- hex_to_int(r)
-  g_val <- hex_to_int(g)
-  b_val <- hex_to_int(b)
-
-  grey_val <- round(0.299 * r_val + 0.587 * g_val + 0.114 * b_val)
-  grey_hex <- int_to_hex(grey_val)
-
-  return(c(grey_hex, grey_hex, grey_hex))
-}
-
-
-
-
 
 
 
@@ -262,15 +249,6 @@ apply_filter <- function(img_data, filter_function) {
 
 
 
-# Read the image
-img <- image_read("C:/Users/sadaf/Downloads/Test_image.jpg")
-
-# Extract RGB data from the image
-img_data <- image_data(img)
-
-# Apply the grayscale filter
-grey_data <- apply_filter(img_data, to_greyscale)
-
 # Rearrange dimensions: from [3, width, height] to [height, width, 3]
 rgb_array <- aperm(grey_data, c(3, 2, 1))
 
@@ -353,15 +331,6 @@ apply_custom_threshold <- function(img_data, cutoff = 128, low_color = c("00", "
 
 
 
-
-# Load necessary library
-library(magick)
-
-# Step 1: Read the image
-img <- image_read("C:/Users/sadaf/Downloads/Test_image.jpg")
-
-# Step 2: Extract RGB data from the image
-img_data <- image_data(img)
 
 # Step 3: Apply the custom thresholding function
 thresholded_data <- apply_custom_threshold(img_data, cutoff = 128)
